@@ -1,0 +1,82 @@
+version: '3.4'
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=citizendemo
+      - MONGO_INITDB_ROOT_PASSWORD=citizendemo
+    ports:
+      - "27017:27017"
+    networks:
+      - citizendemo
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    container_name: kafka-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    networks:
+      - citizendemo
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: host.docker.internal:2181
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_BROKER_ID: 1
+    networks:
+      - citizendemo
+  citizendemo.resourceapi:
+    image: citizendemo-resourceapi:v1
+    container_name: citizendemo-resourceapi
+    depends_on:
+      - mongodb
+      - kafka
+    build:
+      context: ../../resourceapi
+      dockerfile: dockerfile
+    ports:
+      - "5002:5002"
+    networks:
+      - citizendemo
+  citizendemo.citizenapi:
+    image: citizendemo-citizenapi:v1
+    container_name: citizendemo-citizenapi
+    depends_on:
+      - mongodb
+      - citizendemo.resourceapi
+    build:
+      context: ../../citizenapi
+      dockerfile: dockerfile
+    ports:
+      - "5001:5001"
+    networks:
+      - citizendemo
+  citizendemo.provisionworker:
+    image: citizendemo-provisionworker:v1
+    container_name: citizendemo-provisionworker
+    depends_on:
+      - citizendemo.resourceapi
+      - kafka
+    build:
+      context: ../../provisionworker
+      dockerfile: dockerfile
+    networks:
+      - citizendemo
+  citizendemo.loadgenerator:
+    image: citizendemo-loadgenerator:v1
+    container_name: citizendemo-loadgenerator
+    depends_on:
+      - citizendemo.citizenapi
+    build:
+      context: ../../loadgenerator
+      dockerfile: dockerfile
+    networks:
+      - citizendemo
+networks:
+  citizendemo:
+    driver: bridge

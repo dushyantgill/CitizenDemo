@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki
+  namespace: citizendemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: loki
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: loki
+    spec:
+      containers:
+        - args:
+            - -config.file=/etc/loki/local-config.yaml
+          image: grafana/loki:latest
+          name: loki
+          ports:
+            - containerPort: 3100
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: citizendemo
+spec:
+  type: LoadBalancer
+  selector:
+    service: loki
+  ports:
+    - name: "3100"
+      protocol: TCP
+      port: 3100
+      targetPort: 3100

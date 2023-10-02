@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgenerator
+  namespace: citizendemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: loadgenerator
+  template:
+    metadata:
+      labels:
+        service: loadgenerator
+    spec:
+      containers:
+        - name: loadgenerator
+          image: loadgenerator:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5004
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadgenerator
+  namespace: citizendemo
+spec:
+  type: LoadBalancer
+  selector:
+    service: loadgenerator
+  ports:
+    - name: "5004"
+      protocol: TCP
+      port: 5004
+      targetPort: 5004

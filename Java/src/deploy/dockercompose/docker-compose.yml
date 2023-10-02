@@ -8,8 +8,26 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=citizendemo
     ports:
       - "27017:27017"
+    labels:
+      logging: "promtail"
     networks:
       - citizendemo
+  mongodb-metrics-exporter:
+    image: percona/mongodb_exporter:0.39.0
+    container_name: mongo-metrics-exporter
+    command:
+      - "--mongodb.uri=mongodb://citizendemo:citizendemo@host.docker.internal:27017"
+      - "--compatible-mode"
+      - "--discovering-mode"
+      - "--mongodb.collstats-colls=CitizenDemo.citizens,CitizenDemo.resources"
+      - "--collector.diagnosticdata"
+      - "--collector.replicasetstatus"
+      - "--collector.dbstats"
+      - "--collector.topmetrics"
+      - "--collector.indexstats"
+      - "--collector.collstats"
+    ports:
+      - "9216:9216"
   zookeeper:
     image: bitnami/zookeeper:latest
     container_name: kafka-zookeeper
@@ -17,6 +35,8 @@ services:
       - "2181:2181"
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
+    labels:
+      logging: "promtail"
     networks:
       - citizendemo
   kafka:
@@ -24,10 +44,25 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+      - "1099:1099"
     environment:
       KAFKA_ZOOKEEPER_CONNECT: host.docker.internal:2181
       ALLOW_PLAINTEXT_LISTENER: "yes"
       KAFKA_BROKER_ID: 1
+      JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1099 -Dcom.sun.management.jmxremote.rmi.port=1099 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=kafka"
+    labels:
+      logging: "promtail"
+    networks:
+      - citizendemo
+  kafka-metrics-exporter:
+    image: bitnami/jmx-exporter:latest
+    container_name: kafka-metrics-exporter
+    ports:
+      - "5556:5556"
+    environment:
+      SERVICE_PORT: 5556
+    volumes:
+      - ./kafka/metrics-exporter:/opt/jmx_exporter
     networks:
       - citizendemo
   citizendemo.resourceapi:
@@ -41,6 +76,8 @@ services:
       dockerfile: dockerfile
     ports:
       - "5002:5002"
+    labels:
+      logging: "promtail"
     networks:
       - citizendemo
   citizendemo.citizenapi:
@@ -54,6 +91,8 @@ services:
       dockerfile: dockerfile
     ports:
       - "5001:5001"
+    labels:
+      logging: "promtail"
     networks:
       - citizendemo
   citizendemo.provisionworker:
@@ -65,6 +104,10 @@ services:
     build:
       context: ../../provisionworker
       dockerfile: dockerfile
+    ports:
+      - "5003:5003"
+    labels:
+      logging: "promtail"
     networks:
       - citizendemo
   citizendemo.loadgenerator:
@@ -75,6 +118,66 @@ services:
     build:
       context: ../../loadgenerator
       dockerfile: dockerfile
+    ports:
+      - "5004:5004"
+    labels:
+      logging: "promtail"
+    networks:
+      - citizendemo
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: monitoring-prometheus
+    command:
+      - '--config.file=/etc/prometheus.yml'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus.yml
+    networks:
+      - citizendemo
+  grafana:
+    image: grafana/grafana
+    container_name: monitoring-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - citizendemo
+  loki:
+    image: grafana/loki:latest
+    container_name: monitoring-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - citizendemo
+  promtail:
+    image: grafana/promtail:latest
+    container_name: monitoring-loki-promtail
+    volumes:
+      - ./promtail/promtail.yaml:/etc/promtail/docker-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/docker-config.yaml
+    depends_on:
+      - loki
+    networks:
+      - citizendemo
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: monitoring-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
     networks:
       - citizendemo
 networks:

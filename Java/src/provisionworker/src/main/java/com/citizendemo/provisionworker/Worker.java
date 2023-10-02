@@ -5,6 +5,7 @@ import com.citizendemo.provisionworker.models.Resource;
 import com.citizendemo.provisionworker.services.CitizenService;
 import com.citizendemo.provisionworker.services.ResourceService;
 
+import io.micrometer.core.instrument.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -37,6 +39,7 @@ public class Worker {
                     ResourceService.ProvisionResource(resource.resourceId, resourceServiceURL);
                     Thread.sleep(new Random().nextInt(0,500));
                     latency = Date.from(Instant.now()).getTime() - citizen.dateCreated.getTime();
+                    Metrics.timer("citizendemo_provisionworker_provisioninglatency").record(latency, TimeUnit.MILLISECONDS);
                     logger.info("Provisioned resource " + resource.resourceId + " for citizen " + citizen.citizenId + " with " + latency + " ms latency.");
                 }
             }

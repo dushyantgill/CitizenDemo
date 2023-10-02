@@ -1,0 +1,8 @@
+---
+startDelaySeconds: 15
+hostPort: kafka:1099
+ssl: false
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+rules:
+  - pattern: ".*

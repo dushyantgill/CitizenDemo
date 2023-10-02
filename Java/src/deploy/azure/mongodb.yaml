@@ -25,7 +25,7 @@ spec:
               value: citizendemo
             - name: MONGO_INITDB_ROOT_USERNAME
               value: citizendemo
-        - name: mongodb-metrics
+        - name: mongodb-metrics-exporter
           image: percona/mongodb_exporter:0.39.0
           args:
             - --mongodb.uri=mongodb://citizendemo:citizendemo@localhost:27017

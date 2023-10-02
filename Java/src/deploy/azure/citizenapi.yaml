@@ -1,37 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: resourceapi
+  name: citizenapi
   namespace: citizendemo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: resourceapi
+      service: citizenapi
   template:
     metadata:
       labels:
-        service: resourceapi
+        service: citizenapi
     spec:
       containers:
-        - name: resourceapi
-          image: resourceapi:latest
-          imagePullPolicy: IfNotPresent
+        - name: citizenapi
+          image: cdjtestacr.azurecr.io/citizenapi:latest
+          imagePullPolicy: Always
           ports:
-            - containerPort: 5002
+            - containerPort: 5001
       restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: resourceapi
+  name: citizenapi
   namespace: citizendemo
 spec:
   type: LoadBalancer
   selector:
-    service: resourceapi
+    service: citizenapi
   ports:
-    - name: "5002"
+    - name: "5001"
       protocol: TCP
-      port: 5002
-      targetPort: 5002
+      port: 5001
+      targetPort: 5001

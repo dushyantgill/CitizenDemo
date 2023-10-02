@@ -26,7 +26,7 @@ spec:
             - name: ALLOW_ANONYMOUS_LOGIN
               value: "yes"
             - name: ZOO_SERVERS
-              value: zookeeper.default.svc.cluster.local:2888:3888
+              value: kafka-zookeeper.default.svc.cluster.local:2888:3888
           securityContext:
             runAsUser: 0
           lifecycle:

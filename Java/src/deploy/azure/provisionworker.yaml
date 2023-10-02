@@ -1,40 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: loki
+  name: provisionworker
   namespace: citizendemo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: loki
-  strategy:
-    type: Recreate
+      service: provisionworker
   template:
     metadata:
       labels:
-        service: loki
+        service: provisionworker
     spec:
       containers:
-        - args:
-            - -config.file=/etc/loki/local-config.yaml
-          image: grafana/loki:latest
-          name: loki
+        - name: provisionworker
+          image: cdjtestacr.azurecr.io/provisionworker:latest
+          imagePullPolicy: Always
           ports:
-            - containerPort: 3100
+            - containerPort: 5003
       restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: loki
+  name: provisionworker
   namespace: citizendemo
 spec:
   type: LoadBalancer
   selector:
-    service: loki
+    service: provisionworker
   ports:
-    - name: "3100"
+    - name: "5003"
       protocol: TCP
-      port: 3100
-      targetPort: 3100
+      port: 5003
+      targetPort: 5003

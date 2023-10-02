@@ -15,21 +15,21 @@ spec:
     spec:
       containers:
         - name: loadgenerator
-          image: loadgenerator:latest
-          imagePullPolicy: IfNotPresent
+          image: cdjtestacr.azurecr.io/loadgenerator:latest
+          imagePullPolicy: Always
           ports:
-            - containerPort: 5004
+            - containerPort: 5001
       restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: loadgenerator
+  name: citizenapi
   namespace: citizendemo
 spec:
   type: LoadBalancer
   selector:
-    service: loadgenerator
+    service: citizenapi
   ports:
     - name: "5004"
       protocol: TCP

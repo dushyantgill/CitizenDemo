@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-zookeeper
+  namespace: citizendemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: kafka-zookeeper
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: kafka-zookeeper
+    spec:
+      containers:
+        - name: kafka-zookeeper
+          image: bitnami/zookeeper:latest
+          ports:
+            - containerPort: 2181
+            - containerPort: 2888
+            - containerPort: 3888
+          env:
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+            - name: ZOO_SERVERS
+              value: kafka-zookeeper.default.svc.cluster.local:2888:3888
+          securityContext:
+            runAsUser: 0
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "sh"
+                  - "-c"
+                  - >
+                    echo $(( $(cat /etc/hosts | grep zookeeper | awk '{print($3)}' | awk '{split($0,array,"-")} END{print array[3]}') + 1 )) > /bitnami/zookeeper/data/myid
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-zookeeper
+  namespace: citizendemo
+spec:
+  type: LoadBalancer
+  selector:
+    service: kafka-zookeeper
+  ports:
+    - name: "2181"
+      protocol: TCP
+      port: 2181
+      targetPort: 2181
+    - name: "2888"
+      protocol: TCP
+      port: 2888
+      targetPort: 2888
+    - name: "3888"
+      protocol: TCP
+      port: 3888
+      targetPort: 3888

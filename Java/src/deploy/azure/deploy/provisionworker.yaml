@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: provisionworker
+  namespace: citizendemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: provisionworker
+  template:
+    metadata:
+      labels:
+        service: provisionworker
+    spec:
+      containers:
+        - name: provisionworker
+          image: citizendemoacr.azurecr.io/provisionworker:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5003
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: provisionworker
+  namespace: citizendemo
+spec:
+  type: LoadBalancer
+  selector:
+    service: provisionworker
+  ports:
+    - name: "5003"
+      protocol: TCP
+      port: 5003
+      targetPort: 5003

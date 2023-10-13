@@ -1,0 +1,8 @@
+apiVersion: azmon.app.monitoring/v1
+kind: appmonitoringconfig
+metadata:
+ name: appmonitoring
+ namespace: citizendemo
+spec:
+ autoInstrumentationPlatforms: [ NodeJs,  DotNet, Java ]
+ aiConnectionString: "InstrumentationKey=7467462e-40cf-4078-a1dc-36282fa19791;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/"

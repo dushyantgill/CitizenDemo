@@ -2,4 +2,7 @@ FROM maven
 COPY ./ ./
 RUN mvn clean package
 EXPOSE 5002
-CMD ["java", "-jar", "target/resourceapi-0.0.1-SNAPSHOT.jar"]
+COPY applicationinsights-agent-3.4.17.jar applicationinsights-agent.jar
+COPY applicationinsights.json applicationinsights.json
+ENV APPLICATIONINSIGHTS_CONNECTION_STRING="InstrumentationKey=2dec0897-2707-40cb-85d2-d35b9b7b31ed;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/"
+CMD ["java", "-javaagent:applicationinsights-agent.jar", "-jar", "target/resourceapi-0.0.1-SNAPSHOT.jar"]

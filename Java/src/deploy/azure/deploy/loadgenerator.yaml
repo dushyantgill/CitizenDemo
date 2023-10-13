@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgenerator
+  namespace: citizendemo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: loadgenerator
+  template:
+    metadata:
+      labels:
+        service: loadgenerator
+    spec:
+      containers:
+        - name: loadgenerator
+          image: citizendemoacr.azurecr.io/loadgenerator:latest
+          imagePullPolicy: Always
+      restartPolicy: Always

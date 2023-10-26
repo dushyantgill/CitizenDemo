@@ -126,7 +126,7 @@ output "traces-connection-string" {
 }
 
 resource "azurerm_dashboard_grafana" "grafana" {
-  name                = "citizendemo${random_id.suffix.hex}dashboards"
+  name                = "citizendemo${random_id.suffix.hex}grafana"
   location            = azurerm_resource_group.rg-monitor.location
   resource_group_name = azurerm_resource_group.rg-monitor.name
   identity {

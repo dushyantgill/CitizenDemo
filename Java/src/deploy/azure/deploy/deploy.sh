@@ -1,5 +1,7 @@
-az aks get-credentials --resource-group citizendemo --name citizendemoaks --overwrite-existing
+az aks get-credentials --resource-group citizendemo861a --name citizendemo861aaks --overwrite-existing
+kubectl config use-context citizendemo861aaks
 kubectl create namespace citizendemo
+kubectl label namespace default istio.io/rev=asm-1-17
 kubectl apply -f mongodb.yaml
 kubectl apply -f kafka-zookeeper.yaml
 kubectl apply -f kafka.yaml

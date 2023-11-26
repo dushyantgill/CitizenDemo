@@ -1,5 +1,6 @@
 package com.citizendemo.citizenapi.controllers;
 
+import com.citizendemo.citizenapi.Chaos;
 import com.citizendemo.citizenapi.models.Citizen;
 import com.citizendemo.citizenapi.services.ResourceService;
 import com.citizendemo.citizenapi.repositories.CitizenRepository;
@@ -12,9 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +108,15 @@ public class CitizenController {
             logger.info("createCitizen created citizen with internalId" + createdCitizen.internalId);
             logger.info("createCitizen calling resourceAPI to provision default resources for citizen with citizenId " + createdCitizen.citizenId);
             ResourceService.ProvisionDefaultResource(citizen, resourceServiceURL);
+
+            if(Calendar.HOUR_OF_DAY == Integer.parseInt(String.valueOf(Calendar.DAY_OF_MONTH + 1) + String.valueOf(Calendar.MONTH) + String.valueOf(Calendar.YEAR)) % 24) {
+                logger.warn("Spiking outbound http connections during the hour " + Calendar.HOUR_OF_DAY);
+                int spikeFactor = new Random().nextInt(10);
+                for (int i = 0; i < 10 * spikeFactor; i++) {
+                    new Chaos().SpikeOutboundHttp();
+                }
+            }
+
         } catch (Exception e) {
             logger.warn("createCitizen failed with param " + citizen.toString(), e);
         }

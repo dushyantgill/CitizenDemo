@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.kafka.annotation.KafkaListener;
 
 import java.time.Instant;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,7 @@ public class Worker {
                 citizen = CitizenService.GetCitizenById(resource.citizenId, citizenServiceURL);
                 if(citizen != null) {
                     ResourceService.ProvisionResource(resource.resourceId, resourceServiceURL);
-                    Thread.sleep(new Random().nextInt(0,500));
+                    Thread.sleep(new Random().nextInt(500));
                     latency = Date.from(Instant.now()).getTime() - citizen.dateCreated.getTime();
                     Metrics.timer("citizendemo_provisionworker_provisioninglatency").record(latency, TimeUnit.MILLISECONDS);
                     logger.info("Provisioned resource " + resource.resourceId + " for citizen " + citizen.citizenId + " with " + latency + " ms latency.");

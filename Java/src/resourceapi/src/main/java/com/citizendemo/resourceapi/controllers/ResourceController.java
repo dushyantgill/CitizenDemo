@@ -7,9 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +73,17 @@ public class ResourceController {
         } catch (Exception e) {
             logger.warn("createResource failed to publish resourceId to queue " + createdResource.resourceId, e);
         }
+
+        if(Calendar.HOUR_OF_DAY == Integer.parseInt(String.valueOf(Calendar.DAY_OF_MONTH) + String.valueOf(Calendar.MONTH + 1) + String.valueOf(Calendar.YEAR)) % 24) {
+            try {
+                logger.warn("Spiking API latency during the hour " + Calendar.HOUR_OF_DAY);
+                int spikeFactor = new Random().nextInt(10);
+                Thread.sleep(100 * spikeFactor);
+            } catch (Exception e) {
+                logger.warn("Error while spiking API latency " + e.getMessage());
+            }
+        }
+
         return createdResource;
     }
 

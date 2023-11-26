@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -51,7 +52,10 @@ public class Worker {
 
     @Scheduled(fixedRate = 15000)
     public void createCitizens() {
-        for (int count = 0; count < 15; count++) {
+        int noctbc = new Random().nextInt(10);
+        int nocc = 0;
+        if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) { noctbc = noctbc / 3; }
+        for (int count = 0; count < 5*noctbc; count++) {
             try {
                 CityData cityData = sampleData.Cities.get(new Random().nextInt(sampleData.Cities.size()));
                 String streetName = sampleData.StreetNames.get(new Random().nextInt(sampleData.StreetNames.size()));
@@ -87,10 +91,12 @@ public class Worker {
                 citizen.country = cityData.Country;
 
                 CitizenService.CreateCitizen(citizen, citizenServiceURL);
+                nocc++;
             } catch (Exception e) {
-                logger.warn("Error while creating citizen ", e);
+                logger.warn("Error while creating citizen " + e.getMessage());
             }
         }
+        logger.info("Created " + nocc + " citizens.");
     }
 
     @Scheduled(fixedRate = 180000)
@@ -99,58 +105,74 @@ public class Worker {
         try {
             citizens = CitizenService.GetCitizens(citizenServiceURL);
         } catch (Exception e) {
-            logger.warn("Error while getting citizens to delete ", e);
+            logger.warn("Error while getting citizens to delete " + e.getMessage());
         }
-        for (int count = 0; count < 90; count++) {
+        int noctbd = new Random().nextInt(10);
+        int nocd = 0;
+        if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) { noctbd = noctbd / 3; }
+
+        for (int count = 0; count < 10*noctbd; count++) {
             try {
                 CitizenService.DeleteCitizens(citizens.get(new Random().nextInt(citizens.size())), citizenServiceURL);
+                nocd++;
             } catch (Exception e) {
-                logger.warn("Error while deleting citizen ", e);
+                logger.warn("Error while deleting citizen " + e.getMessage());
             }
         }
+        logger.info("Deleted " + nocd + " citizens.");
     }
 
     @Scheduled(fixedRate = 5000)
     public void searchCitizens() {
-        for (int count = 0; count < 50; count++) {
+        int noctbs = new Random().nextInt(10);
+        int nocs = 0;
+        if (Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) { noctbs = noctbs / 3; }
+
+        for (int count = 0; count < 10*noctbs; count++) {
             try {
                 String givenName = sampleData.GivenNames.get(new Random().nextInt(sampleData.GivenNames.size()));
                 CitizenService.SearchCitizens(givenName, "", "", "", "", citizenServiceURL);
+                nocs++;
             } catch (Exception e) {
-                logger.warn("Error while searching citizens with name ", e);
+                logger.warn("Error while searching citizens with name " + e.getMessage());
             }
         }
-        for (int count = 0; count < 25; count++) {
+        for (int count = 0; count < 10*noctbs; count++) {
             try {
                 String surname = sampleData.Surnames.get(new Random().nextInt(sampleData.Surnames.size()));
                 CitizenService.SearchCitizens(surname, "", "", "", "", citizenServiceURL);
+                nocs++;
             } catch (Exception e) {
-                logger.warn("Error while searching citizens with name ", e);
+                logger.warn("Error while searching citizens with name " + e.getMessage());
             }
         }
-        for (int count = 0; count < 25; count++) {
+        for (int count = 0; count < 10*noctbs; count++) {
             try {
                 CityData cityData = sampleData.Cities.get(new Random().nextInt(sampleData.Cities.size()));
                 CitizenService.SearchCitizens("", cityData.PostalCode, "", "", "", citizenServiceURL);
+                nocs++;
             } catch (Exception e) {
-                logger.warn("Error while searching citizens with postal code ", e);
+                logger.warn("Error while searching citizens with postal code " + e.getMessage());
             }
         }
-        for (int count = 0; count < 25; count++) {
+        for (int count = 0; count < 10*noctbs; count++) {
             try {
                 CityData cityData = sampleData.Cities.get(new Random().nextInt(sampleData.Cities.size()));
                 CitizenService.SearchCitizens("", "", cityData.City, "", "", citizenServiceURL);
+                nocs++;
             } catch (Exception e) {
-                logger.warn("Error while searching citizens with city ", e);
+                logger.warn("Error while searching citizens with city " + e.getMessage());
             }
         }
-        for (int count = 0; count < 25; count++) {
+        for (int count = 0; count < 10*noctbs; count++) {
             try {
                 CityData cityData = sampleData.Cities.get(new Random().nextInt(sampleData.Cities.size()));
                 CitizenService.SearchCitizens("", "", "", cityData.State, "", citizenServiceURL);
+                nocs++;
             } catch (Exception e) {
-                logger.warn("Error while searching citizens with state ", e);
+                logger.warn("Error while searching citizens with state " + e.getMessage());
             }
         }
+        logger.info("Searched " + nocs + " citizens.");
     }
 }
